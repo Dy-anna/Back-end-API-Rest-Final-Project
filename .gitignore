@@ -1,0 +1,22 @@
+ 
+# Ignorer les dépendances
+/vendor/
+/node_modules/
+
+# Ignorer les fichiers d'environnement et de configuration sensibles
+.env
+.env.local
+.env.development
+.env.production
+.env.testing
+
+# Ignorer les fichiers de logs et caches
+/storage/
+bootstrap/cache/
+*.log
+
+# Ignorer les fichiers de l'IDE et de l'OS
+.idea/
+*.DS_Store
+*.bak
+*.swp
