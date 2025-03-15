@@ -2,61 +2,75 @@
 
 namespace App\Http\Controllers\API;
 
-use App\Http\Controllers\Controller;
 use App\Models\Event;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Str;
 
 class EventController extends Controller
 {
-    public function index(Request $request)
+    // Liste des événements
+    public function index()
     {
-        $query = Event::query();
-
-        if ($request->filled('category')) $query->where('category', $request->category);
-        if ($request->filled('location')) $query->where('location', $request->location);
-        if ($request->filled('date')) $query->whereDate('date', $request->date);
-
-        return $query->paginate(5);
+        return response()->json(Event::all());
     }
 
-    public function show($id)
-    {
-        return Event::findOrFail($id);
-    }
-
+    // Ajouter un événement
     public function store(Request $request)
     {
         $request->validate([
-            'title' => 'required|string',
+            'title' => 'required|string|max:255',
             'description' => 'required',
-            'location' => 'required',
+            'location' => 'required|string',
             'date' => 'required|date',
-            'category' => 'required',
+            'category' => 'required|string',
             'max_participants' => 'required|integer',
         ]);
 
-        $event = new Event($request->all());
-        $event->slug = Str::slug($request->title);
-        $event->user_id = $request->user()->id;
-        $event->save();
+        $event = Event::create([
+            'title' => $request->title,
+            'slug' => Str::slug($request->title),
+            'description' => $request->description,
+            'location' => $request->location,
+            'date' => $request->date,
+            'category' => $request->category,
+            'max_participants' => $request->max_participants,
+        ]);
 
         return response()->json($event, 201);
     }
 
-    public function update(Request $request, $id)
+    // Voir un événement
+    public function show($id)
     {
-        $event = Event::findOrFail($id);
-        $event->update($request->all());
-
+        $event = Event::find($id);
+        if (!$event) {
+            return response()->json(['message' => 'Événement introuvable'], 404);
+        }
         return response()->json($event);
     }
 
+    // Modifier un événement
+    public function update(Request $request, $id)
+    {
+        $event = Event::find($id);
+        if (!$event) {
+            return response()->json(['message' => 'Événement introuvable'], 404);
+        }
+
+        $event->update($request->all());
+        return response()->json($event);
+    }
+
+    // Supprimer un événement
     public function destroy($id)
     {
-        $event = Event::findOrFail($id);
-        $event->delete();
+        $event = Event::find($id);
+        if (!$event) {
+            return response()->json(['message' => 'Événement introuvable'], 404);
+        }
 
-        return response()->json(['message' => 'Event deleted']);
+        $event->delete();
+        return response()->json(['message' => 'Événement supprimé']);
     }
 }
