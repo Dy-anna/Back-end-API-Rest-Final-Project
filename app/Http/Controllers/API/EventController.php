@@ -95,23 +95,35 @@ public function store(Request $request)
         return response()->json(['message' => 'Événement supprimé']);
     }
     public function search(Request $request)
-    {
-        $query = Event::query();
+{
+    $query = Event::query();
 
-        if ($request->has('category')) {
-            $query->where('category', $request->category);
-        }
-
-        if ($request->has('date')) {
-            $query->whereDate('date', $request->date);
-        }
-
-        if ($request->has('location')) {
-            $query->where('location', 'LIKE', '%' . $request->location . '%');
-        }
-
-        return response()->json($query->paginate(5));
+    // 🔍 Recherche par mot-clé dans le titre, la description et le lieu
+    if (!empty($request->search)) {
+        $query->where(function ($q) use ($request) {
+            $q->where('title', 'LIKE', '%' . $request->search . '%')
+              ->orWhere('description', 'LIKE', '%' . $request->search . '%')
+              ->orWhere('location', 'LIKE', '%' . $request->search . '%');
+        });
     }
+
+    // 🏆 Filtrer par catégorie (seulement si une catégorie est sélectionnée)
+    if (!empty($request->category)) {
+        $query->where('category', $request->category);
+    }
+
+    // 📅 Filtrer entre deux dates (uniquement si les deux dates sont fournies)
+    if (!empty($request->date_start) && !empty($request->date_end)) {
+        $query->whereBetween('date', [$request->date_start, $request->date_end]);
+    }
+
+    // 🎯 Appliquer la pagination
+    $events = $query->paginate(5);
+
+    return view('home', compact('events'));
+}
+
+
     public function create()
 {
     return view('events.create');
