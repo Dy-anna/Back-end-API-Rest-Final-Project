@@ -1,35 +1,38 @@
 @extends('layouts.app')
 
 @section('content')
-    <h1 class="text-3xl font-bold mb-6">Événements Sportifs</h1>
 
+<div class="container text-center">
+    <h1 class="display-4">📅 Événements Sportifs</h1>
+    <p class="lead">Découvrez et participez aux meilleurs événements sportifs !</p>
     @auth
-        <a href="{{ route('events.create') }}" class="btn btn-primary mb-6">Créer un événement</a>
+        <a href="{{ route('events.create') }}" class="btn btn-success mb-4">➕ Créer un événement</a>
+    @endauth
+    @auth
+        <p class="alert alert-info">Bienvenue, {{ Auth::user()->name }} !</p>
     @endauth
 
-    <div class="space-y-6">
+    <div class="row mt-4">
         @forelse ($events as $event)
-            <div class="border p-4 rounded-lg shadow bg-white">
-                <h2 class="text-xl font-semibold">{{ $event->title }}</h2>
-                <p class="text-gray-700 mt-2">{{ $event->description }}</p>
-                <p class="mt-2"><strong>Lieu :</strong> {{ $event->location }}</p>
-                <p><strong>Date :</strong> {{ \Carbon\Carbon::parse($event->date)->format('d/m/Y') }}</p>
-
-                @auth
-                    @if ($event->user_id !== auth()->id())
-                        <form action="{{ route('events.register', $event->id) }}" method="POST" class="mt-4">
-                            @csrf
-                            <button class="btn btn-success">S'inscrire</button>
-                        </form>
-                    @endif
-                @endauth
+            <div class="col-md-4">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ $event->title }}</h5>
+                        <p class="card-text">{{ $event->description }}</p>
+                        <p><strong>Lieu :</strong> {{ $event->location }}</p>
+                        <p><strong>Date :</strong> {{ \Carbon\Carbon::parse($event->date)->format('d/m/Y') }}</p>
+                        <a href="#" class="btn btn-primary w-100">Voir plus</a>
+                        
+                    </div>
+                </div>
             </div>
         @empty
-            <p class="text-gray-500">Aucun événement disponible pour le moment.</p>
+        
+            <p class="text-muted">Aucun événement disponible pour le moment.</p>
         @endforelse
-    </div>
+        
 
-    <div class="mt-6">
-        {{ $events->links() }} {{-- Pagination --}}
     </div>
+</div>
+
 @endsection
