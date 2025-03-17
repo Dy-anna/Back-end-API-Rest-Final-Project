@@ -11,6 +11,43 @@
     @auth
         <p class="alert alert-info">Bienvenue, {{ Auth::user()->name }} !</p>
     @endauth
+    <div class="container">
+    <h2 class="text-center">🔍 Rechercher un Événement</h2>
+
+    <form method="GET" action="{{ route('events.search') }}" class="row g-3 mb-4">
+        @csrf
+
+        <!-- Recherche par mot-clé -->
+        <div class="col-md-4">
+            <input type="text" name="search" class="form-control" placeholder="Rechercher par titre, description, lieu" value="{{ request('search') }}">
+        </div>
+
+        <!-- Filtre par catégorie -->
+        <div class="col-md-3">
+            <select name="category" class="form-control">
+                <option value="">Toutes les catégories</option>
+                <option value="Football" {{ request('category') == 'Football' ? 'selected' : '' }}>Football</option>
+                <option value="Basketball" {{ request('category') == 'Basketball' ? 'selected' : '' }}>Basketball</option>
+                <option value="Tennis" {{ request('category') == 'Tennis' ? 'selected' : '' }}>Tennis</option>
+                <option value="Athlétisme" {{ request('category') == 'Athlétisme' ? 'selected' : '' }}>Athlétisme</option>
+            </select>
+        </div>
+
+        <!-- Filtrer par date -->
+        <div class="col-md-2">
+            <input type="date" name="date_start" class="form-control" value="{{ request('date_start') }}">
+        </div>
+
+        <div class="col-md-2">
+            <input type="date" name="date_end" class="form-control" value="{{ request('date_end') }}">
+        </div>
+
+        <!-- Bouton Rechercher -->
+        <div class="col-md-1">
+            <button type="submit" class="btn btn-primary w-100">🔎</button>
+        </div>
+    </form>
+</div>
 
     <div class="row mt-4">
         @forelse ($events as $event)
@@ -33,6 +70,7 @@
         
 
     </div>
+    
 </div>
 
 @endsection
