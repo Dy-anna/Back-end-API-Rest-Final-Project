@@ -20,4 +20,15 @@ class User extends Authenticatable
         'password',
         'remember_token',
     ];
+
+    public function createdEvents()
+{
+    return $this->hasMany(Event::class);
+}
+
+public function events()
+{
+    return $this->belongsToMany(Event::class, 'event_user')->withTimestamps();
+}
+
 }
