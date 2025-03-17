@@ -10,13 +10,14 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // 🔹 Affichage des formulaires de connexion et d'inscription
+Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 Route::get('/login', function () { return view('auth.login'); })->name('login');
 Route::get('/register', function () { return view('auth.register'); })->name('register');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // 🔹 Gestion des événements (affichage)
-
+Route::get('/events/search', [EventController::class, 'search'])->name('events.search');
 Route::get('/events/create', [EventController::class, 'create'])->name('events.create')->middleware('auth');
 Route::post('/events', [EventController::class, 'store'])->name('events.store')->middleware('auth');
 Route::middleware('auth')->group(function () {
