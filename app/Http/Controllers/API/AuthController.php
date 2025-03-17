@@ -9,19 +9,19 @@ use App\Http\Controllers\Controller;
 
 class AuthController extends Controller
 {
-    // Inscription
+    // Inscription d'un utilisateur
     public function register(Request $request)
     {
-        $data = $request->validate([
+        $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users',
             'password' => 'required|string|confirmed|min:6',
         ]);
 
         $user = User::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => Hash::make($data['password']),
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
         ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;
@@ -33,32 +33,37 @@ class AuthController extends Controller
         ], 201);
     }
 
-    // Connexion
+    
+    
+    
     public function login(Request $request)
     {
-        $credentials = $request->validate([
+        $request->validate([
             'email' => 'required|email',
-            'password' => 'required',
+            'password' => 'required'
         ]);
-
-        if (!Auth::attempt($credentials)) {
-            return response()->json(['message' => 'Identifiants incorrects'], 401);
+    
+        $credentials = $request->only('email', 'password');
+    
+        if (Auth::attempt($credentials)) {
+            // ✅ Rediriger immédiatement vers /home
+            return redirect()->route('home');
         }
-
-        $user = Auth::user();
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        return response()->json([
-            'message' => 'Connexion réussie',
-            'user' => $user,
-            'token' => $token
-        ]);
+    
+        return redirect()->route('login')->with('error', 'Email ou mot de passe incorrect.');
     }
+    
+        public function logout()
+        {
+            Auth::logout();
+            return redirect('/login')->with('success', 'Déconnexion réussie.');
+        }
+    
+    
 
-    // Déconnexion
-    public function logout()
+    // Récupérer l'utilisateur connecté
+    public function userInfo(Request $request)
     {
-        Auth::user()->tokens()->delete();
-        return response()->json(['message' => 'Déconnexion réussie']);
+        return response()->json($request->user());
     }
 }
