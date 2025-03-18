@@ -22,6 +22,7 @@
                     @auth
                         <li class="nav-item"><a class="nav-link" href="/profile">{{ Auth::user()->name }}</a></li>
                         <li class="nav-item"><a class="nav-link" href="{{ route('my-events') }}">📌 Mes événements</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ route('events.favorites') }}">❤️ Mes Favoris</a></li>
                         <li class="nav-item">
                             <form action="{{ route('logout') }}" method="POST">
                                 @csrf
