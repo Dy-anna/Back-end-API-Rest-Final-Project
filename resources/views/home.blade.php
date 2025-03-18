@@ -58,7 +58,8 @@
                         <p class="card-text">{{ $event->description }}</p>
                         <p><strong>Lieu :</strong> {{ $event->location }}</p>
                         <p><strong>Date :</strong> {{ \Carbon\Carbon::parse($event->date)->format('d/m/Y') }}</p>
-                        <a href="#" class="btn btn-primary w-100">Voir plus</a>
+                        <a href="{{ route('events.show', $event->id) }}" class="btn btn-primary w-100">Voir plus</a>
+
                         
                     </div>
                 </div>
