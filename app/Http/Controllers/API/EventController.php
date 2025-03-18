@@ -40,11 +40,11 @@ public function store(Request $request)
         'max_participants' => 'required|integer|min:1',
     ]);
 
-    // ✅ Ajouter le slug et l'utilisateur connecté
+    // Ajouter le slug et l'utilisateur connecté
     $validated['slug'] = Str::slug($validated['title']);
-    $validated['user_id'] = Auth::id(); // ✅ Associer l'événement à l'utilisateur connecté
+    $validated['user_id'] = Auth::id(); // Associer l'événement à l'utilisateur connecté
 
-    // ✅ Créer l'événement avec les données validées
+    // Créer l'événement avec les données validées
     Event::create($validated);
 
     return redirect()->route('home')->with('success', 'Événement créé avec succès.');
@@ -53,7 +53,10 @@ public function store(Request $request)
 
     // Voir un événement
     public function show($id)
-    {
+    {   
+        $event = Event::findOrFail($id);
+            return view('events.show', compact('event'));
+
         $event = Event::find($id);
         if (!$event) {
             return response()->json(['message' => 'Événement introuvable'], 404);
@@ -142,10 +145,57 @@ public function edit($id)
 
 public function myEvents()
 {
-    $events = Event::where('user_id', Auth::id())->get(); // ✅ Récupérer uniquement les événements créés par l'utilisateur connecté
-    return view('events.my-events', compact('events'));
-    
+    $user = Auth::user();
+
+    $createdEvents = Event::where('user_id', $user->id)->paginate(5); // ✅ Événements créés
+    $registeredEvents = $user->registrations()->paginate(5); // ✅ Événements où il est inscrit
+
+    return view('events.my-events', compact('createdEvents', 'registeredEvents'));
 }
+
+
+public function favorite($id)
+{
+    $event = Event::findOrFail($id);
+    $user = Auth::user();
+
+    if ($user->favorites()->where('event_id', $event->id)->exists()) {
+        $user->favorites()->detach($event->id); // Supprimer des favoris
+        return redirect()->route('events.show', $event->id)->with('success', 'Événement retiré des favoris.');
+    } else {
+        $user->favorites()->attach($event->id); // Ajouter aux favoris
+        return redirect()->route('events.show', $event->id)->with('success', 'Événement ajouté aux favoris.');
+    }
+}
+public function favorites()
+{
+    $user = Auth::user();
+    $events = $user->favorites()->paginate(5); // ✅ Récupérer les favoris paginés
+    return view('events.favorites', compact('events'));
+}
+
+public function register($id)
+{
+    $event = Event::findOrFail($id);
+    $user = Auth::user();
+
+    if ($user->registrations()->where('event_id', $event->id)->exists()) {
+        // Si déjà inscrit, se désinscrire
+        $user->registrations()->detach($event->id);
+        $event->increment('max_participants'); // 🔹 Réajoute une place
+        return redirect()->route('events.show', $event->id)->with('success', 'Vous vous êtes désinscrit de cet événement.');
+    } else {
+        // Sinon, s'inscrire
+        if ($event->max_participants > 0) {
+            $user->registrations()->attach($event->id);
+            $event->decrement('max_participants'); // 🔹 Enlève une place
+            return redirect()->route('events.show', $event->id)->with('success', 'Vous êtes inscrit à cet événement !');
+        } else {
+            return redirect()->route('events.show', $event->id)->with('error', 'Plus de places disponibles.');
+        }
+    }
+}
+
 
 
 }
